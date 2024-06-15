@@ -9,8 +9,8 @@ chroma_client = chromadb.PersistentClient(path = DB_PATH)
 collection = chroma_client.get_or_create_collection(name="Documents")
 
 app = Flask(__name__)
-# 允許所有來自 localhost:3000 的請求
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+# 允許所有來自 http://localhost:5173 的請求
+CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5173"}}, supports_credentials=True)
 
 @app.route('/add_document', methods=['POST', 'OPTIONS'])
 @cross_origin()
