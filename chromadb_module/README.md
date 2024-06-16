@@ -3,7 +3,7 @@
 ## Setup
 
 ```bash=
-cd data_process_module
+cd chromadb_module
 conda create -n chromadb_management python==3.11.9 -y
 conda activate chromadb_management
 pip install -r requirements.txt
