@@ -1,0 +1,135 @@
+<template>
+    <div class="container">
+        <br />
+        <div class="input-group">
+        <span class="input-group-text">請輸入知識</span>
+        <textarea class="form-control" v-model="text" placeholder="Type here..."></textarea>
+        <button class="btn btn-outline-secondary" @click="saveDocument">儲存到後端資料庫</button>
+        </div>
+        <div v-for="(document, index) in documents" :key="index" class="card m-2">
+        <div class="card-body">
+            <textarea v-if="editIndex === index" class="form-control" v-model="editText"></textarea>
+            <p v-else>{{ document }}</p>
+            <button v-if="editIndex === index" class="btn btn-success m-1" @click="updateDocument(index)">更新</button>
+            <button v-else class="btn btn-primary m-1" @click="editDocument(index, document)">編輯</button>
+            <button class="btn btn-danger m-1" @click="deleteDocument(document)">刪除</button>
+        </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { ref, onMounted } from 'vue';
+
+export default {
+setup() {
+    const documents = ref([]);
+    const text = ref('');
+    const editText = ref('');
+    const editIndex = ref(-1);
+
+    const fetchDocuments = async () => {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/get_documents');
+        if (response.ok) {
+            const data = await response.json();
+            documents.value = data.documents;
+        } else {
+            throw new Error('Failed to fetch documents');
+        }
+    } catch (error) {
+        console.error('Error fetching documents:', error);
+    }
+    };
+
+    const saveDocument = async () => {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/add_document', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: text.value })
+        });
+        if (response.ok) {
+            text.value = '';
+            await fetchDocuments();
+        } else {
+            console.error('Failed to save document:', await response.json());
+        }
+    } catch (error) {
+        console.error('Error saving document:', error);
+    }
+    };
+
+    const updateDocument = async (index) => {
+        console.log(editIndex.value, index);
+        if (editIndex.value !== -1) {
+            try {
+                const oldContent = documents.value[editIndex.value];
+                const response = await fetch('http://127.0.0.1:5000/update_document', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ old_content: oldContent, new_content: editText.value })
+                });
+                if (response.ok) {
+                    editIndex.value = -1;
+                    await fetchDocuments();
+                } else {
+                    console.error('Failed to update document:', await response.json());
+                }
+            } catch (error) {
+                console.error('Error updating document:', error);
+            }
+        }
+    };
+
+    const editDocument = (index, content) => {
+        editIndex.value = index;
+        editText.value = content;
+    };
+
+    const deleteDocument = async (content) => {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/delete_document', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: content })
+            });
+            if (response.ok) {
+                await fetchDocuments();
+            } else {
+                console.error('Failed to delete document:', await response.json());
+            }
+        } catch (error) {
+            console.error('Error deleting document:', error);
+        }
+    };
+
+    onMounted(fetchDocuments);
+
+    return {
+        documents,
+        text,
+        editText,
+        editIndex,
+        saveDocument,
+        updateDocument,
+        editDocument,
+        deleteDocument
+    };
+},
+};
+</script>
+
+<style>
+/* Add your custom styles here */
+.container {
+padding: 20px;
+}
+.input-group-text, .form-control, .btn {
+margin-bottom: 10px;
+}
+.card {
+margin: 10px 0;
+}
+</style>
+  
