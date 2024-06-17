@@ -2,12 +2,14 @@
 </script>
 
 <template>
-  <input type="text" v-model="inputText" class="form-control my-3" placeholder="Enter text" @input="Query_Document">
-  <!-- <button class="btn btn-primary" @click="Show_Document">Submit</button> -->
-  <div v-for="(document, index) in documents" :key="index" class="card m-2">
-    <div class="card-body">
-      <div>
-        <vue-markdown :source="document" />
+  <div class="container">
+    <input type="text" v-model="inputText" class="form-control my-3" placeholder="Enter text" @input="Query_Document">
+    <!-- <button class="btn btn-primary" @click="Show_Document">Submit</button> -->
+    <div v-for="(document, index) in documents" :key="index" class="card m-2">
+      <div class="card-body">
+        <div>
+          <vue-markdown :source="document" />
+        </div>
       </div>
     </div>
   </div>
