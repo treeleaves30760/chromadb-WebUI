@@ -9,7 +9,7 @@
         <div v-for="(document, index) in documents" :key="index" class="card m-2">
             <div class="card-body">
                 <div>
-                    <textarea v-if="editIndex === index" class="form-control" v-model="editText"></textarea>
+                    <textarea v-if="editIndex === index" class="form-control edit-content" v-model="editText"></textarea>
                     <vue-markdown v-else :source="document" />
                 </div>
                 <div class="btn-group">
@@ -131,13 +131,17 @@ export default {
 <style>
 /* Add your custom styles here */
 .container {
-padding: 20px;
+    padding: 20px;
 }
 .input-group-text, .form-control, .btn {
-margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 .card {
-margin: 10px 0;
+    margin: 10px 0;
+}
+
+.edit-content {
+    height: 60vh;
 }
 </style>
   
