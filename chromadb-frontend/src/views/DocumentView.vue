@@ -40,7 +40,7 @@ export default {
 
         const fetchDocuments = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:5000/get_documents');
+                const response = await fetch('http://127.0.0.1:6500/get_documents');
                 if (response.ok) {
                     const data = await response.json();
                     documents.value = data.documents;
@@ -54,7 +54,7 @@ export default {
 
         const saveDocument = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:5000/add_document', {
+                const response = await fetch('http://127.0.0.1:6500/add_document', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ content: text.value })
@@ -74,7 +74,7 @@ export default {
             if (editDocumentContent.value) {
                 try {
                     const oldContent = editDocumentContent.value;
-                    const response = await fetch('http://127.0.0.1:5000/update_document', {
+                    const response = await fetch('http://127.0.0.1:6500/update_document', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ old_content: oldContent, new_content: editText.value })
@@ -99,7 +99,7 @@ export default {
 
         const deleteDocument = async (content) => {
             try {
-                const response = await fetch('http://127.0.0.1:5000/delete_document', {
+                const response = await fetch('http://127.0.0.1:6500/delete_document', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ content: content })
