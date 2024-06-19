@@ -26,7 +26,7 @@ export default {
 
     const Query_Document = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5000/query_document', {
+        const response = await fetch('http://127.0.0.1:6500/query_document', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: inputText.value })
