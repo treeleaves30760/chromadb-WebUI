@@ -2,11 +2,14 @@
     <div class="container">
         <br />
         <div class="input-group">
-        <span class="input-group-text">請輸入知識</span>
-        <textarea class="form-control" v-model="text" placeholder="Type here..."></textarea>
-        <button class="btn btn-outline-secondary" @click="saveDocument">儲存到後端資料庫</button>
+            <span class="input-group-text">請輸入知識</span>
+            <textarea class="form-control" v-model="text" placeholder="Type here..."></textarea>
+            <button class="btn btn-outline-secondary" @click="saveDocument">儲存到後端資料庫</button>
         </div>
-        <div v-for="(document, index) in documents" :key="index" class="card m-2">
+        <div class="input-group">
+            <input type="text" v-model="filter" class="form-control" placeholder="Search by keyword...">
+        </div>
+        <div v-for="(document, index) in filteredDocuments" :key="index" class="card m-2">
             <div class="card-body">
                 <div>
                     <textarea v-if="editIndex === index" class="form-control edit-content" v-model="editText"></textarea>
@@ -22,14 +25,16 @@
     </div>
 </template>
 
+
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import VueMarkdown from 'vue-markdown-render'
 
 export default {
     setup() {
         const documents = ref([]);
         const text = ref('');
+        const filter = ref('');
         const editText = ref('');
         const editIndex = ref(-1);
 
@@ -48,25 +53,24 @@ export default {
         };
 
         const saveDocument = async () => {
-        try {
-            const response = await fetch('http://127.0.0.1:5000/add_document', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: text.value })
-            });
-            if (response.ok) {
-                text.value = '';
-                await fetchDocuments();
-            } else {
-                console.error('Failed to save document:', await response.json());
+            try {
+                const response = await fetch('http://127.0.0.1:5000/add_document', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: text.value })
+                });
+                if (response.ok) {
+                    text.value = '';
+                    await fetchDocuments();
+                } else {
+                    console.error('Failed to save document:', await response.json());
+                }
+            } catch (error) {
+                console.error('Error saving document:', error);
             }
-        } catch (error) {
-            console.error('Error saving document:', error);
-        }
         };
 
         const updateDocument = async (index) => {
-            console.log(editIndex.value, index);
             if (editIndex.value !== -1) {
                 try {
                     const oldContent = documents.value[editIndex.value];
@@ -84,6 +88,8 @@ export default {
                 } catch (error) {
                     console.error('Error updating document:', error);
                 }
+            } else {
+                console.log(index)
             }
         };
 
@@ -109,17 +115,24 @@ export default {
             }
         };
 
+        const filteredDocuments = computed(() => {
+            if (!filter.value) return documents.value;
+            return documents.value.filter(document => document.toLowerCase().includes(filter.value.toLowerCase()));
+        });
+
         onMounted(fetchDocuments);
 
         return {
             documents,
             text,
+            filter,
             editText,
             editIndex,
             saveDocument,
             updateDocument,
             editDocument,
-            deleteDocument
+            deleteDocument,
+            filteredDocuments
         };
     },
     components: {
