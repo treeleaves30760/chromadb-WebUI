@@ -9,16 +9,16 @@
         <div class="input-group">
             <input type="text" v-model="filter" class="form-control" placeholder="Search by keyword...">
         </div>
-        <div v-for="(document, index) in filteredDocuments" :key="index" class="card m-2">
+        <div v-for="document in filteredDocuments" :key="document" class="card m-2">
             <div class="card-body">
                 <div>
-                    <textarea v-if="editIndex === index" class="form-control edit-content" v-model="editText"></textarea>
+                    <textarea v-if="editDocumentContent === document" class="form-control edit-content" v-model="editText"></textarea>
                     <vue-markdown v-else :source="document" />
                 </div>
                 <div class="btn-group">
-                    <button v-if="editIndex === index" class="btn btn-outline-success btn-lg" @click="updateDocument(index)">更新</button>
-                    <button v-else class="btn btn-outline-primary btn-lg" @click="editDocument(index, document)">編輯</button>
-                    <button class="btn btn-outline-danger btn-lg" @click="deleteDocument(document)">刪除</button>
+                    <button v-if="editDocumentContent === document" class="btn btn-outline-success btn-lg" @click="updateDocument">更新</button>
+                    <button v-else class="btn btn-outline-primary btn-lg" @click="() => editDocument(document)">編輯</button>
+                    <button class="btn btn-outline-danger btn-lg" @click="() => deleteDocument(document)">刪除</button>
                 </div>
             </div>
         </div>
@@ -36,7 +36,7 @@ export default {
         const text = ref('');
         const filter = ref('');
         const editText = ref('');
-        const editIndex = ref(-1);
+        const editDocumentContent = ref(null); // This will hold the content of the document being edited
 
         const fetchDocuments = async () => {
             try {
@@ -70,31 +70,30 @@ export default {
             }
         };
 
-        const updateDocument = async (index) => {
-            if (editIndex.value !== -1) {
+        const updateDocument = async () => {
+            if (editDocumentContent.value) {
                 try {
-                    const oldContent = documents.value[editIndex.value];
+                    const oldContent = editDocumentContent.value;
                     const response = await fetch('http://127.0.0.1:5000/update_document', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ old_content: oldContent, new_content: editText.value })
                     });
                     if (response.ok) {
-                        editIndex.value = -1;
+                        editDocumentContent.value = null;
+                        editText.value = '';
                         await fetchDocuments();
                     } else {
                         console.error('Failed to update document:', await response.json());
                     }
                 } catch (error) {
-                    console.error('Error updating document:', error);
+                   console.error('Error updating document:', error);
                 }
-            } else {
-                console.log(index)
             }
         };
 
-        const editDocument = (index, content) => {
-            editIndex.value = index;
+        const editDocument = (content) => {
+            editDocumentContent.value = content;
             editText.value = content;
         };
 
@@ -116,7 +115,6 @@ export default {
         };
 
         const filteredDocuments = computed(() => {
-            if (!filter.value) return documents.value;
             return documents.value.filter(document => document.toLowerCase().includes(filter.value.toLowerCase()));
         });
 
@@ -127,7 +125,7 @@ export default {
             text,
             filter,
             editText,
-            editIndex,
+            editDocumentContent,
             saveDocument,
             updateDocument,
             editDocument,
@@ -140,6 +138,7 @@ export default {
     },
 };
 </script>
+
 
 <style>
 /* Add your custom styles here */
