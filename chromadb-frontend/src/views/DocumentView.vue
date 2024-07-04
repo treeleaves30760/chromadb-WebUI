@@ -1,24 +1,37 @@
 <template>
     <div class="container">
         <br />
-        <div class="input-group">
-            <span class="input-group-text">請輸入知識</span>
-            <textarea class="form-control" v-model="text" placeholder="Type here..."></textarea>
-            <button class="btn btn-outline-secondary" @click="saveDocument">儲存到後端資料庫</button>
+        <div class="mb-3">
+            <div class="input-group">
+                <span class="input-group-text">請輸入ID</span>
+                <input type="text" class="form-control" v-model="text_id" placeholder="Data ID">
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">請輸入知識</span>
+                <textarea class="form-control" v-model="text" placeholder="Type data here..."></textarea>
+                <button class="btn btn-outline-secondary" @click="saveDocument">儲存到後端資料庫</button>
+            </div>
         </div>
         <div class="input-group">
             <input type="text" v-model="filter" class="form-control" placeholder="Search by keyword...">
         </div>
-        <div v-for="document in filteredDocuments" :key="document" class="card m-2">
+        <div v-for="document in filteredDocuments" :key="document.id" class="card m-2">
             <div class="card-body">
-                <div>
-                    <textarea v-if="editDocumentContent === document" class="form-control edit-content" v-model="editText"></textarea>
-                    <vue-markdown v-else :source="document" />
+                <h5 class="card-title content-id">ID: <b>{{ document.id }}</b></h5>
+                <div v-if="editId === document.id">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">ID</span>
+                        <input type="text" class="form-control" v-model="newEditId" placeholder="New ID">
+                    </div>
+                    <textarea class="form-control edit-content" v-model="editText"></textarea>
                 </div>
-                <div class="btn-group">
-                    <button v-if="editDocumentContent === document" class="btn btn-outline-success btn-lg" @click="updateDocument">更新</button>
-                    <button v-else class="btn btn-outline-primary btn-lg" @click="() => editDocument(document)">編輯</button>
-                    <button class="btn btn-outline-danger btn-lg" @click="() => deleteDocument(document)">刪除</button>
+                <vue-markdown v-else :source="document.content" />
+                <div class="row mt-2">
+                    <div class="btn-group">
+                        <button v-if="editId === document.id" class="btn btn-outline-success btn-lg" @click="updateDocument">更新</button>
+                        <button v-else class="btn btn-outline-primary btn-lg" @click="() => editDocument(document)">編輯</button>
+                        <button class="btn btn-outline-danger btn-lg" @click="() => deleteDocument(document)">刪除</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -34,16 +47,21 @@ export default {
     setup() {
         const documents = ref([]);
         const text = ref('');
+        const text_id = ref('');
         const filter = ref('');
         const editText = ref('');
-        const editDocumentContent = ref(null); // This will hold the content of the document being edited
+        const editId = ref(null);
+        const newEditId = ref('');
 
         const fetchDocuments = async () => {
             try {
                 const response = await fetch('http://127.0.0.1:6500/get_documents');
                 if (response.ok) {
                     const data = await response.json();
-                    documents.value = data.documents;
+                    const data_documents = data.documents;
+                    const data_ids = data.ids;
+                    const combinedData = data_documents.map((content, index) => ({ content, id: data_ids[index] }));
+                    documents.value = combinedData;
                 } else {
                     throw new Error('Failed to fetch documents');
                 }
@@ -57,10 +75,11 @@ export default {
                 const response = await fetch('http://127.0.0.1:6500/add_document', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: text.value })
+                    body: JSON.stringify({ content: text.value, id: text_id.value})
                 });
                 if (response.ok) {
                     text.value = '';
+                    text_id.value = '';
                     await fetchDocuments();
                 } else {
                     console.error('Failed to save document:', await response.json());
@@ -71,38 +90,43 @@ export default {
         };
 
         const updateDocument = async () => {
-            if (editDocumentContent.value) {
+            if (editId.value) {
                 try {
-                    const oldContent = editDocumentContent.value;
                     const response = await fetch('http://127.0.0.1:6500/update_document', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ old_content: oldContent, new_content: editText.value })
+                        body: JSON.stringify({ 
+                            old_id: editId.value,
+                            new_content: editText.value,
+                            new_id: newEditId.value
+                        })
                     });
                     if (response.ok) {
-                        editDocumentContent.value = null;
+                        editId.value = null;
+                        newEditId.value = '';
                         editText.value = '';
                         await fetchDocuments();
                     } else {
                         console.error('Failed to update document:', await response.json());
                     }
                 } catch (error) {
-                   console.error('Error updating document:', error);
+                    console.error('Error updating document:', error);
                 }
             }
         };
 
-        const editDocument = (content) => {
-            editDocumentContent.value = content;
-            editText.value = content;
+        const editDocument = (document) => {
+            editId.value = document.id;
+            newEditId.value = document.id;
+            editText.value = document.content;
         };
 
-        const deleteDocument = async (content) => {
+        const deleteDocument = async (data) => {
             try {
                 const response = await fetch('http://127.0.0.1:6500/delete_document', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: content })
+                    body: JSON.stringify({ content: data.content, id: data.id})
                 });
                 if (response.ok) {
                     await fetchDocuments();
@@ -115,7 +139,9 @@ export default {
         };
 
         const filteredDocuments = computed(() => {
-            return documents.value.filter(document => document.toLowerCase().includes(filter.value.toLowerCase()));
+            return documents.value.filter((document) => {
+                return document.content.toLowerCase().includes(filter.value.toLowerCase())
+            });
         });
 
         onMounted(fetchDocuments);
@@ -123,9 +149,11 @@ export default {
         return {
             documents,
             text,
+            text_id,
             filter,
             editText,
-            editDocumentContent,
+            editId,
+            newEditId,
             saveDocument,
             updateDocument,
             editDocument,
@@ -141,7 +169,6 @@ export default {
 
 
 <style>
-/* Add your custom styles here */
 .container {
     padding: 20px;
 }
@@ -149,11 +176,15 @@ export default {
     margin-bottom: 10px;
 }
 .card {
-    margin: 10px 0;
+    margin: 3rem 0;
 }
 
 .edit-content {
     height: 60vh;
+}
+
+.content-id {
+    margin-bottom: 10px;
 }
 </style>
   

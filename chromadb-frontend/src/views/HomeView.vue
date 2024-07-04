@@ -7,8 +7,9 @@
     <!-- <button class="btn btn-primary" @click="Show_Document">Submit</button> -->
     <div v-for="(document, index) in documents" :key="index" class="card m-2">
       <div class="card-body">
+        <h5 class="card-title content-id">ID: <b>{{ document.id }}</b></h5>
         <div>
-          <vue-markdown :source="document" />
+          <vue-markdown :source="document.content" />
         </div>
       </div>
     </div>
@@ -34,7 +35,8 @@ export default {
         const data = await response.json();
 
         if (data.results && data.results.documents) {
-          documents.value = data.results.documents[0];
+          const combinedData = data.results.documents[0].map((content, index) => ({ content, id: data.results.ids[0][index]}));
+          documents.value = combinedData;
         }
 
         console.log('Documents',documents.value);

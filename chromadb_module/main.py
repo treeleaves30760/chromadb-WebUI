@@ -21,13 +21,14 @@ def add_document():
     if request.method == "OPTIONS":
         return _build_cors_preflight_response()
     # 檢查是否有 'content'
-    if not request.json or 'content' not in request.json:
+    if not request.json or 'content' not in request.json or 'id' not in request.json:
         return jsonify({'error': 'missing content'}), 400
 
     user_content = request.json['content']
+    user_id = request.json['id']
     print(f'Content: {user_content}')
     
-    collection.add(documents=user_content, ids=[user_content])
+    collection.add(documents=user_content, ids=[user_id])
     
     return jsonify({'message': 'document added'})
 
@@ -43,7 +44,7 @@ def get_documents():
     
     results = collection.get()
     print(f'Results: {results}')
-    return jsonify({'documents': results['documents']})
+    return jsonify({'documents': results['documents'], 'ids': results['ids']})
 
 @app.route('/update_document', methods=['POST', 'OPTIONS'])
 @cross_origin()
@@ -55,16 +56,24 @@ def update_document():
     if request.method == "OPTIONS":
         return _build_cors_preflight_response()
     # 檢查是否有 'content'
-    if not request.json or 'new_content' not in request.json or 'old_content' not in request.json:
-        return jsonify({'error': 'missing content'}), 400
+    if not request.json:
+        return jsonify({'error': 'can\'t parse request'}), 400
+    
+    if 'new_content' not in request.json:
+        return jsonify({'error': 'missing new_content'}), 400
+    if 'old_id' not in request.json:
+        return jsonify({'error': 'missing old_id'}), 400
+    if 'new_id' not in request.json:
+        return jsonify({'error': 'missing new_id'}), 400
 
     new_content = request.json['new_content']
-    old_content = request.json['old_content']
-    print(f'Old Content: {old_content}')
-    print(f'New Content: {new_content}')
+    new_content_id = request.json['new_id']
+    old_content_id = request.json['old_id']
+    print(f'Old ID: {old_content_id}')
+    print(f'New Content: {new_content}, New ID: {new_content_id}')
     
-    collection.delete(ids=[old_content])
-    collection.add(documents=new_content, ids=[new_content])
+    collection.delete(ids=[old_content_id])
+    collection.add(documents=new_content, ids=[new_content_id])
     
     return jsonify({'message': 'document updated'})
 
@@ -82,22 +91,32 @@ def delete_document():
         return jsonify({'error': 'missing content'}), 400
 
     user_content = request.json['content']
-    print(f'Content: {user_content}')
+    user_content_id = request.json['id']
+    print(f'Content: {user_content}, ID: {user_content_id}')
     
-    collection.delete(ids=[user_content])
+    collection.delete(ids=[user_content_id])
     return jsonify({'message': 'document removed'})
 
-@app.route('/clear_documents', methods=['GET', 'OPTIONS'])
-@cross_origin()
-def clear_documents():
-    """
-    Clear all documents from the documents list.
-    """
+############################################################
+# The below APT is dangerous, it will clear all documents. #
+# Please comment it out before running the server public.  #
+# Not recommended to use in production.                    #
+# 以下的 API 是危險的，它會清除所有文件。                        #
+# 請在運行服務器之前將其註釋掉。                                #
+# 不建議在生產環境中使用。                                     #
+############################################################
 
-    if request.method == "OPTIONS":
-        return _build_cors_preflight_response()
-    chroma_client.reset()
-    return jsonify({'message': 'documents cleared'})
+# @app.route('/clear_documents', methods=['GET', 'OPTIONS'])
+# @cross_origin()
+# def clear_documents():
+#     """
+#     Clear all documents from the documents list.
+#     """
+
+#     if request.method == "OPTIONS":
+#         return _build_cors_preflight_response()
+#     chroma_client.reset()
+#     return jsonify({'message': 'documents cleared'})
 
 @app.route('/query_document', methods=['POST', 'OPTIONS'])
 @cross_origin()
