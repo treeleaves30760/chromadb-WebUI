@@ -38,135 +38,111 @@
     </div>
 </template>
 
-
-<script>
+<script setup>
 import { ref, onMounted, computed } from 'vue';
 import VueMarkdown from 'vue-markdown-render'
 
-export default {
-    setup() {
-        const documents = ref([]);
-        const text = ref('');
-        const text_id = ref('');
-        const filter = ref('');
-        const editText = ref('');
-        const editId = ref(null);
-        const newEditId = ref('');
+const documents = ref([]);
+const text = ref('');
+const text_id = ref('');
+const filter = ref('');
+const editText = ref('');
+const editId = ref(null);
+const newEditId = ref('');
 
-        const fetchDocuments = async () => {
-            try {
-                const response = await fetch('http://127.0.0.1:6500/get_documents');
-                if (response.ok) {
-                    const data = await response.json();
-                    const data_documents = data.documents;
-                    const data_ids = data.ids;
-                    const combinedData = data_documents.map((content, index) => ({ content, id: data_ids[index] }));
-                    documents.value = combinedData;
-                } else {
-                    throw new Error('Failed to fetch documents');
-                }
-            } catch (error) {
-                console.error('Error fetching documents:', error);
-            }
-        };
-
-        const saveDocument = async () => {
-            try {
-                const response = await fetch('http://127.0.0.1:6500/add_document', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: text.value, id: text_id.value})
-                });
-                if (response.ok) {
-                    text.value = '';
-                    text_id.value = '';
-                    await fetchDocuments();
-                } else {
-                    console.error('Failed to save document:', await response.json());
-                }
-            } catch (error) {
-                console.error('Error saving document:', error);
-            }
-        };
-
-        const updateDocument = async () => {
-            if (editId.value) {
-                try {
-                    const response = await fetch('http://127.0.0.1:6500/update_document', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            old_id: editId.value,
-                            new_content: editText.value,
-                            new_id: newEditId.value
-                        })
-                    });
-                    if (response.ok) {
-                        editId.value = null;
-                        newEditId.value = '';
-                        editText.value = '';
-                        await fetchDocuments();
-                    } else {
-                        console.error('Failed to update document:', await response.json());
-                    }
-                } catch (error) {
-                    console.error('Error updating document:', error);
-                }
-            }
-        };
-
-        const editDocument = (document) => {
-            editId.value = document.id;
-            newEditId.value = document.id;
-            editText.value = document.content;
-        };
-
-        const deleteDocument = async (data) => {
-            try {
-                const response = await fetch('http://127.0.0.1:6500/delete_document', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: data.content, id: data.id})
-                });
-                if (response.ok) {
-                    await fetchDocuments();
-                } else {
-                    console.error('Failed to delete document:', await response.json());
-                }
-            } catch (error) {
-                console.error('Error deleting document:', error);
-            }
-        };
-
-        const filteredDocuments = computed(() => {
-            return documents.value.filter((document) => {
-                return document.content.toLowerCase().includes(filter.value.toLowerCase())
-            });
-        });
-
-        onMounted(fetchDocuments);
-
-        return {
-            documents,
-            text,
-            text_id,
-            filter,
-            editText,
-            editId,
-            newEditId,
-            saveDocument,
-            updateDocument,
-            editDocument,
-            deleteDocument,
-            filteredDocuments
-        };
-    },
-    components: {
-        VueMarkdown
-    },
+const fetchDocuments = async () => {
+    try {
+        const response = await fetch('http://127.0.0.1:6500/get_documents');
+        if (response.ok) {
+            const data = await response.json();
+            const data_documents = data.documents;
+            const data_ids = data.ids;
+            const combinedData = data_documents.map((content, index) => ({ content, id: data_ids[index] }));
+            documents.value = combinedData;
+        } else {
+            throw new Error('Failed to fetch documents');
+        }
+    } catch (error) {
+        console.error('Error fetching documents:', error);
+    }
 };
-</script>
 
+const saveDocument = async () => {
+    try {
+        const response = await fetch('http://127.0.0.1:6500/add_document', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: text.value, id: text_id.value})
+        });
+        if (response.ok) {
+            text.value = '';
+            text_id.value = '';
+            await fetchDocuments();
+        } else {
+            console.error('Failed to save document:', await response.json());
+        }
+    } catch (error) {
+        console.error('Error saving document:', error);
+    }
+};
+
+const updateDocument = async () => {
+    if (editId.value) {
+        try {
+            const response = await fetch('http://127.0.0.1:6500/update_document', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    old_id: editId.value,
+                    new_content: editText.value,
+                    new_id: newEditId.value
+                })
+            });
+            if (response.ok) {
+                editId.value = null;
+                newEditId.value = '';
+                editText.value = '';
+                await fetchDocuments();
+            } else {
+                console.error('Failed to update document:', await response.json());
+            }
+        } catch (error) {
+            console.error('Error updating document:', error);
+        }
+    }
+};
+
+const editDocument = (document) => {
+    editId.value = document.id;
+    newEditId.value = document.id;
+    editText.value = document.content;
+};
+
+const deleteDocument = async (data) => {
+    try {
+        const response = await fetch('http://127.0.0.1:6500/delete_document', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: data.content, id: data.id})
+        });
+        if (response.ok) {
+            await fetchDocuments();
+        } else {
+            console.error('Failed to delete document:', await response.json());
+        }
+    } catch (error) {
+        console.error('Error deleting document:', error);
+    }
+};
+
+const filteredDocuments = computed(() => {
+    return documents.value.filter((document) => {
+        return document.content.toLowerCase().includes(filter.value.toLowerCase())
+    });
+});
+
+onMounted(fetchDocuments);
+</script>
 
 <style>
 .container {
@@ -187,4 +163,3 @@ export default {
     margin-bottom: 10px;
 }
 </style>
-  
