@@ -1,4 +1,30 @@
 <script setup>
+import { ref } from 'vue';
+import VueMarkdown from 'vue-markdown-render'
+
+const inputText = ref('');
+const documents = ref([]);
+
+const Query_Document = async () => {
+  try {
+    const response = await fetch('http://127.0.0.1:6500/query_document', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: inputText.value })
+    });
+    const data = await response.json();
+
+    if (data.results && data.results.documents) {
+      const combinedData = data.results.documents[0].map((content, index) => ({ content, id: data.results.ids[0][index]}));
+      documents.value = combinedData;
+    }
+
+    console.log('Documents', documents.value);
+  } catch (error) {
+    console.error('Error fetching documents:', error);
+  }
+};
+
 </script>
 
 <template>
@@ -15,49 +41,3 @@
     </div>
   </div>
 </template>
-
-<script>
-import { ref } from 'vue';
-import VueMarkdown from 'vue-markdown-render'
-
-export default {
-  setup() {
-    const inputText = ref('');
-    const documents = ref([]);
-
-    const Query_Document = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:6500/query_document', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: inputText.value })
-        });
-        const data = await response.json();
-
-        if (data.results && data.results.documents) {
-          const combinedData = data.results.documents[0].map((content, index) => ({ content, id: data.results.ids[0][index]}));
-          documents.value = combinedData;
-        }
-
-        console.log('Documents',documents.value);
-      } catch (error) {
-        console.error('Error fetching documents:', error);
-      }
-    };
-
-    const Show_Document = () => {
-      console.log(documents.value);
-    }
-
-    return {
-      inputText,
-      documents,
-      Query_Document,
-      Show_Document,
-    };
-  },
-  components: {
-    VueMarkdown
-  },
-};
-</script>
