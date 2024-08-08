@@ -21,20 +21,24 @@ To get started, follow these steps:
 3. Set up and run the Python server:
 
     ```bash
-    cd chromadb_module
+    cd backend
     conda create -n chromadb_management python==3.11.9 -y
     conda activate chromadb_management
     pip install -r requirements.txt
-    python server.py
+    python main.py
     ```
 
 4. Set up and run the Vue frontend:
 
     ```bash
-    cd chromadb-frontend
+    cd frontend-vue
     npm install
     npm run dev
     ```
+
+> [!NOTE]
+> We are using react + shadcn to subsitute vue + bootstrap
+> This may occur in few weeks
 
 Once the server and frontend are running, you can access the Chromadb WebUI by opening your browser and navigating to `http://localhost:5173`.
 
