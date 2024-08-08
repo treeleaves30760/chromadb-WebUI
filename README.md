@@ -1,6 +1,6 @@
 # Chromadb WebUI
 
-This project aims to provide a graphical user interface (GUI) for managing Chromadb.
+This project aims to provide a graphical user interface (GUI) for managing and adjusting Chromadb.
 
 ## Usage
 
@@ -28,18 +28,14 @@ To get started, follow these steps:
     python main.py
     ```
 
-4. Set up and run the Vue frontend:
+4. Set up and run the frontend:
 
     ```bash
-    cd frontend-vue
+    cd frontend-react
     npm install
     npm run dev
     ```
 
-> [!NOTE]
-> We are using react + shadcn to subsitute vue + bootstrap
-> This may occur in few weeks
-
-Once the server and frontend are running, you can access the Chromadb WebUI by opening your browser and navigating to `http://localhost:5173`.
+Once the server and frontend are running, you can access the Chromadb WebUI by opening your browser and navigating to `http://localhost:3000`.
 
 Please note that you may need to configure the server and frontend settings according to your specific environment.
