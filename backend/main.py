@@ -9,10 +9,10 @@ chroma_client = chromadb.PersistentClient(path=DB_PATH)
 collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
 
 app = Flask(__name__)
-# 允許所有來自 http://localhost:5173 的請求
+# 允許所有來自 http://localhost:* 的請求
 CORS(
     app,
-    resources={r"/*": {"origins": "http://127.0.0.1:5173"}},
+    resources={r"/*": {"origins": "http://127.0.0.1:*"}},
     supports_credentials=True,
 )
 
