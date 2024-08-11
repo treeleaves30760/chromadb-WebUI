@@ -17,6 +17,28 @@ CORS(
 )
 
 
+@app.route("/update_collection", methods=["POST", "OPTIONS"])
+@cross_origin()
+def update_collection():
+    """
+    Update the collection.
+    """
+
+    if request.method == "OPTIONS":
+        return _build_cors_preflight_response()
+    # 檢查是否有 'content'
+    if not request.json or "content" not in request.json:
+        return jsonify({"error": "missing content"}), 400
+
+    user_content = request.json["content"]
+    print(f"Content: {user_content}")
+
+    COLLECTION_NAME = user_content
+    collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
+
+    return jsonify({"message": "collection updated"})
+
+
 @app.route("/add_document", methods=["POST", "OPTIONS"])
 @cross_origin()
 def add_document():
