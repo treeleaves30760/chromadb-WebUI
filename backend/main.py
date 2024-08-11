@@ -1,12 +1,12 @@
-import json
 from flask import Flask, request, jsonify, make_response
-import requests
 from flask_cors import CORS, cross_origin  # 導入 CORS
 import chromadb
 
 DB_PATH = "./DB"
+COLLECTION_NAME = "Documents"
+
 chroma_client = chromadb.PersistentClient(path=DB_PATH)
-collection = chroma_client.get_or_create_collection(name="Documents")
+collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
 
 app = Flask(__name__)
 # 允許所有來自 http://localhost:5173 的請求
