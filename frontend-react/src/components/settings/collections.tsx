@@ -19,20 +19,22 @@ type Collection = string;
 const CollectionSetting = () => {
 	const [isClient, setIsClient] = useState(false);
 	const [newCollectionName, setNewCollectionName] = useState("");
+	const [currentCollection, setCurrentCollection] = useState("");
 	const [collections, setCollections] = useState<Collection[]>([]);
 
 	useEffect(() => {
 		setIsClient(true);
-		getCollection();
+		getCollectionList();
 	}, []);
 
-	const getCollection = async () => {
+	const getCollectionList = async () => {
 		try {
-			const response = await fetch(`${LOCAL_SERVER}/get_collection_name`);
+			const response = await fetch(`${LOCAL_SERVER}/get_collection_list`);
 			if (response.ok) {
 				const data = await response.json();
-				console.log(data.collection_name);
-				setCollections(data.collection_name);
+				console.log(data.collection_list);
+				setCurrentCollection(data.current_collection);
+				setCollections(data.collection_list);
 			} else {
 				console.error("Failed to fetch collections");
 			}
@@ -41,9 +43,7 @@ const CollectionSetting = () => {
 		}
 	};
 
-	const createNewCollection = async () => {
-		if (!newCollectionName) return;
-
+	const updateCollection = async (collectionName: string) => {
 		try {
 			const response = await fetch(
 				`${LOCAL_SERVER}/update_collection_name`,
@@ -52,18 +52,26 @@ const CollectionSetting = () => {
 					headers: {
 						"Content-Type": "application/json",
 					},
-					body: JSON.stringify({ name: newCollectionName }),
+					body: JSON.stringify({ content: collectionName }),
 				}
 			);
 
 			if (response.ok) {
-				setNewCollectionName("");
+				setCurrentCollection(collectionName);
+				await getCollectionList(); // Refresh the list after updating
+				window.location.reload();
 			} else {
-				console.error("Failed to create new collection");
+				console.error("Failed to update collection");
 			}
 		} catch (error) {
-			console.error("Error creating new collection:", error);
+			console.error("Error updating collection:", error);
 		}
+	};
+
+	const createNewCollection = async () => {
+		if (!newCollectionName) return;
+		await updateCollection(newCollectionName);
+		setNewCollectionName("");
 	};
 
 	if (!isClient) {
@@ -79,8 +87,32 @@ const CollectionSetting = () => {
 				<CardContent className="space-y-4">
 					<div>
 						<h3 className="text-lg font-semibold mb-2">
-							Current Collection: {collections}
+							Current Collection: {currentCollection}
 						</h3>
+					</div>
+
+					<div>
+						<h3 className="text-lg font-semibold mb-2">
+							Switch Collection
+						</h3>
+						<Select
+							value={currentCollection}
+							onValueChange={(value) => updateCollection(value)}
+						>
+							<SelectTrigger>
+								<SelectValue>{currentCollection}</SelectValue>
+							</SelectTrigger>
+							<SelectContent>
+								{collections.map((collection) => (
+									<SelectItem
+										key={collection}
+										value={collection}
+									>
+										{collection}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 
 					<div>
