@@ -17,9 +17,9 @@ CORS(
 )
 
 
-@app.route("/update_collection", methods=["POST", "OPTIONS"])
+@app.route("/update_collection_name", methods=["POST", "OPTIONS"])
 @cross_origin()
-def update_collection():
+def update_collection_name():
     """
     Update the collection.
     """
@@ -38,6 +38,30 @@ def update_collection():
 
     return jsonify({"message": "collection updated"})
 
+
+@app.route("/get_collection_name", methods=["GET", "OPTIONS"])
+@cross_origin()
+def get_collection_name():
+    """
+    Get the collection name.
+    """
+
+    if request.method == "OPTIONS":
+        return _build_cors_preflight_response()
+
+    return jsonify({"collection_name": COLLECTION_NAME})
+
+@app.route("/get_collection_list", methods=["GET", "OPTIONS"])
+@cross_origin()
+def get_collection_list():
+    """
+    Get the collection list.
+    """
+
+    if request.method == "OPTIONS":
+        return _build_cors_preflight_response()
+
+    return jsonify({"collection_list": chroma_client.list_collections()})
 
 @app.route("/add_document", methods=["POST", "OPTIONS"])
 @cross_origin()
