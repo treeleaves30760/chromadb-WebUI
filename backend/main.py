@@ -23,6 +23,8 @@ def update_collection_name():
     """
     Update the collection.
     """
+    
+    global COLLECTION_NAME, collection
 
     if request.method == "OPTIONS":
         return _build_cors_preflight_response()
@@ -36,7 +38,7 @@ def update_collection_name():
     COLLECTION_NAME = user_content
     collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
 
-    return jsonify({"message": "collection updated"})
+    return jsonify({"message": "collection updated", "new_collection": COLLECTION_NAME})
 
 
 @app.route("/get_collection_name", methods=["GET", "OPTIONS"])
@@ -60,8 +62,10 @@ def get_collection_list():
 
     if request.method == "OPTIONS":
         return _build_cors_preflight_response()
+    
+    collection_list = [collection.name for collection in chroma_client.list_collections()]
 
-    return jsonify({"collection_list": chroma_client.list_collections()})
+    return jsonify({"collection_list": collection_list ,"current_collection": COLLECTION_NAME})
 
 @app.route("/add_document", methods=["POST", "OPTIONS"])
 @cross_origin()
