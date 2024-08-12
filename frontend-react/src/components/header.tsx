@@ -13,6 +13,7 @@ import {
 const pages = [
 	{ name: "Home", path: "/" },
 	{ name: "Documents", path: "/documents" },
+	{ name: "Settings", path: "/settings" },
 ];
 
 const Header = () => {

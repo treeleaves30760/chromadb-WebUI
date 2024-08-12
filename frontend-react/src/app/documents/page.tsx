@@ -6,7 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 import ReactMarkdown from "react-markdown";
+
+import CollectionSetting from "@/components/settings/collections";
 
 interface Document {
 	id: string;
@@ -24,6 +32,9 @@ export default function DocumentManager() {
 	const [editId, setEditId] = useState<string | null>(null);
 	const [newEditId, setNewEditId] = useState("");
 	const [error, setError] = useState<string | null>(null);
+	const [accordionValue, setAccordionValue] = useState<string | undefined>(
+		undefined
+	);
 
 	useEffect(() => {
 		fetchDocuments();
@@ -138,6 +149,22 @@ export default function DocumentManager() {
 					<AlertDescription>{error}</AlertDescription>
 				</Alert>
 			)}
+			<Accordion
+				type="single"
+				collapsible
+				className="w-full mb-8"
+				value={accordionValue}
+				onValueChange={setAccordionValue}
+			>
+				<AccordionItem value="collection-settings">
+					<AccordionTrigger className="text-2xl font-semibold">
+						Collection Setting
+					</AccordionTrigger>
+					<AccordionContent>
+						<CollectionSetting />
+					</AccordionContent>
+				</AccordionItem>
+			</Accordion>
 			<div className="space-y-4">
 				<div className="flex space-x-2">
 					<Input

@@ -17,12 +17,14 @@ CORS(
 )
 
 
-@app.route("/update_collection", methods=["POST", "OPTIONS"])
+@app.route("/update_collection_name", methods=["POST", "OPTIONS"])
 @cross_origin()
-def update_collection():
+def update_collection_name():
     """
     Update the collection.
     """
+    
+    global COLLECTION_NAME, collection
 
     if request.method == "OPTIONS":
         return _build_cors_preflight_response()
@@ -36,8 +38,34 @@ def update_collection():
     COLLECTION_NAME = user_content
     collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
 
-    return jsonify({"message": "collection updated"})
+    return jsonify({"message": "collection updated", "new_collection": COLLECTION_NAME})
 
+
+@app.route("/get_collection_name", methods=["GET", "OPTIONS"])
+@cross_origin()
+def get_collection_name():
+    """
+    Get the collection name.
+    """
+
+    if request.method == "OPTIONS":
+        return _build_cors_preflight_response()
+
+    return jsonify({"collection_name": COLLECTION_NAME})
+
+@app.route("/get_collection_list", methods=["GET", "OPTIONS"])
+@cross_origin()
+def get_collection_list():
+    """
+    Get the collection list.
+    """
+
+    if request.method == "OPTIONS":
+        return _build_cors_preflight_response()
+    
+    collection_list = [collection.name for collection in chroma_client.list_collections()]
+
+    return jsonify({"collection_list": collection_list ,"current_collection": COLLECTION_NAME})
 
 @app.route("/add_document", methods=["POST", "OPTIONS"])
 @cross_origin()
