@@ -172,7 +172,7 @@ export default function DocumentManager() {
 						onChange={(e) => setTextId(e.target.value)}
 						placeholder="Data ID"
 					/>
-					<Input
+					<Textarea
 						value={text}
 						onChange={(e) => setText(e.target.value)}
 						placeholder="Type data here..."
